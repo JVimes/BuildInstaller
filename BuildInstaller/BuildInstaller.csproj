@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.5.6">
+
+	<PropertyGroup>
+		<!-- TargetFramework not actually used -->
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>BuildInstaller</PackageId>
+		<Version>0.0.0-beta</Version>
+		<PackageTags>Install;Installer;Windows Installer;MSI;WiX</PackageTags>
+		<Description></Description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.2.0"/>
+	</ItemGroup>
+
+</Project>
