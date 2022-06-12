@@ -4,10 +4,32 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32519.111
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{9E21BAA6-3ACD-413C-8F9D-30CEB6AACE5A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BF815808-50BB-49D4-8A2A-39D492546D1D} = {BF815808-50BB-49D4-8A2A-39D492546D1D}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp.OldProjFormat", "TestApp.OldProjFormat\TestApp.OldProjFormat.csproj", "{F57AC3F8-1DC4-4603-9AE6-8959B562CCF9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppOldProjFormat", "TestAppOldProjFormat\TestAppOldProjFormat.csproj", "{F57AC3F8-1DC4-4603-9AE6-8959B562CCF9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BF815808-50BB-49D4-8A2A-39D492546D1D} = {BF815808-50BB-49D4-8A2A-39D492546D1D}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildInstaller", "BuildInstaller\BuildInstaller.csproj", "{BF815808-50BB-49D4-8A2A-39D492546D1D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3580D427-C52F-467E-98D8-5C228DD7481A}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\main.yml = .github\workflows\main.yml
+		NuGet.config = NuGet.config
+		ReadMe.md = ReadMe.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Icons", "Icons", "{A403EED8-017B-4E8E-A806-2496D1EBD815}"
+	ProjectSection(SolutionItems) = preProject
+		Icons\PackageIcon.design = Icons\PackageIcon.design
+		Icons\PackageIcon.png = Icons\PackageIcon.png
+		Icons\ReadMe-Icons.md = Icons\ReadMe-Icons.md
+		Icons\TestAppIcon.design = Icons\TestAppIcon.design
+		Icons\TestAppIcon.ico = Icons\TestAppIcon.ico
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +52,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A403EED8-017B-4E8E-A806-2496D1EBD815} = {3580D427-C52F-467E-98D8-5C228DD7481A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C02F1780-4D11-4710-AA15-5A3D827285E8}

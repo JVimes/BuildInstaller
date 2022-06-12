@@ -1,0 +1,223 @@
+﻿<Project>
+
+	<Target Name="BuildInstallerIfShould"
+			AfterTargets="PostBuildEvent"
+			DependsOnTargets="DefineIsFileSystemPublish">
+		<PropertyGroup>
+			<InstallerBuildConfigurations Condition="'$(InstallerBuildConfigurations)' == ''">Release</InstallerBuildConfigurations>
+		</PropertyGroup>
+		<ItemGroup>
+			<InstallerBuildConfigurationItems Include="$(InstallerBuildConfigurations)"/>
+		</ItemGroup>
+		<PropertyGroup>
+			<IsInstallerBuildConfiguration Condition="'%(InstallerBuildConfigurationItems.Identity)' == '$(Configuration)'">true</IsInstallerBuildConfiguration>
+			<IsClickOnceBuild Condition="'$(GenerateClickOnceManifests)' == 'true'">true</IsClickOnceBuild>
+			<ShouldBuildInstaller
+				Condition="
+				'$(IsClickOnceBuild)' == '' And
+				'$(IsInstallerBuildConfiguration)' == 'true' And
+				(
+					('$(BuildInstallerOnPublish)' == 'true' And '$(IsFileSystemPublish)' == 'true') Or
+					'$(BuildInstallerOnPublish)' == ''
+				)"
+				>true</ShouldBuildInstaller>
+		</PropertyGroup>
+		<Warning Text="ClickOnce build detected, Skipping BuildInstaller" Condition="'$(IsClickOnceBuild)' == 'true'"/>
+		<CallTarget Targets="BuildInstaller" Condition="'$(ShouldBuildInstaller)' == 'true'"/>
+	</Target>
+
+	<Target Name="CleanInstallerFolders"
+			AfterTargets="Clean"
+			DependsOnTargets="DefineInstallerOutputPaths">
+		<ItemGroup>
+			<InstallerFiles Include="$(InstallerOutputPath)\**\*.*"/>
+			<InstallerIntermediateFiles Include="$(InstallerIntermediateOutputPath)\**\*.*"/>
+		</ItemGroup>
+		<Delete Files="@(InstallerFiles)" />
+		<Delete Files="@(InstallerIntermediateFiles)" />
+	</Target>
+
+	<Target Name="BuildInstaller">
+		<CallTarget Targets="DefineBuildInstallerProperties"/>
+		<CallTarget Targets="LinkInstaller"/>
+	</Target>
+
+	<Target Name="LinkInstaller"
+			DependsOnTargets="GetInstallerObjFiles;
+							  DefineBuildInstallerProperties"
+			Inputs="@(InstallerObjFiles)"
+			Outputs="$(InstallerPath)">
+		<Exec Command='"$(WixToolsPath)\light.exe" -nologo -ext WixUIExtension -out "$(InstallerPath)" @(InstallerObjFiles->&apos;"%(Identity)"&apos;, &apos; &apos;) -ext WixNetFxExtension' />
+	</Target>
+
+	<Target Name="GetInstallerObjFiles" DependsOnTargets="CompileInstaller">
+		<ItemGroup>
+			<InstallerObjFiles Include="$(InstallerIntermediateOutputPath)\*.wixobj"/>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="CompileInstaller"
+			DependsOnTargets="WriteProductWxsIfNotExists;
+			                  GetInstallerSourceFiles;
+				              DefineBuildInstallerProperties"
+			Inputs="@(InstallerSourceFiles);$(TargetPath)"
+			Outputs="@(InstallerSourceFiles->'$(InstallerIntermediateOutputPath)\%(filename).wixobj');$(InstallerOutputPath)\Product.wixobj">
+		<GetAssemblyInfo Path="$(TargetPath)" Condition="'$(IsOldStyleProject)' == 'true'">
+			<Output PropertyName="Company" TaskParameter="CompanyName" />
+		</GetAssemblyInfo>
+		<PropertyGroup>
+			<Company Condition="'$(Company)' == ''">$(Product)</Company>
+		</PropertyGroup>
+		<Exec Command='"$(WixToolsPath)\candle.exe" -nologo -out "$(InstallerIntermediateOutputPath)\\" @(InstallerSourceFiles->&apos;&quot;%(Identity)&quot;&apos;, &apos; &apos;) -dProductFolder="$(ProductFolder)\" -dProjectDir="$(ProjectDir)\" -dManufacturer="$(Company)" -dProductName="$(Product)" -ext WixUtilExtension'
+			  StandardOutputImportance='normal'/>
+	</Target>
+
+	<UsingTask TaskName="SplitPath"
+			   TaskFactory="RoslynCodeTaskFactory"
+			   AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+		<ParameterGroup>
+			<Path ParameterType="System.String" Required="true" />
+			<Leaf ParameterType="System.String" Output="true" />
+			<BasePath ParameterType="System.String" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				var charsToTrim = new char[] { '\\', '/' };
+				var trimmedPath = Path.TrimEnd(charsToTrim);
+				Leaf = System.IO.Path.GetFileName(trimmedPath);
+				BasePath = System.IO.Path.GetDirectoryName(trimmedPath);
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<UsingTask TaskName="GetAssemblyInfo"
+			   TaskFactory="RoslynCodeTaskFactory"
+			   AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+		<ParameterGroup>
+			<Path ParameterType="System.String" Required="true" />
+			<ProductName ParameterType="System.String" Output="true" />
+			<CompanyName ParameterType="System.String" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.Diagnostics" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+				var info = FileVersionInfo.GetVersionInfo(Path);
+				ProductName = info.ProductName;
+				CompanyName = info.CompanyName;
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<Target Name="WriteProductWxsIfNotExists"
+			DependsOnTargets="DefineBuildInstallerProperties"
+			Condition="!Exists($(ProductWxs))"
+			Outputs="$(ProductWxs)">
+		<PropertyGroup>
+			<ProductWxsTemplate>$(MSBuildThisFileDirectory)Product.wxs</ProductWxsTemplate>
+		</PropertyGroup>
+		<Copy SourceFiles="$(ProductWxsTemplate)" DestinationFiles="$(ProductWxs)" />
+		<Exec Command="$(PowerShellStart) FillInProductWxs '.\$(ProductWxs)' $(PowerShellEnd)" />
+	</Target>
+
+	<Target Name="GetInstallerSourceFiles" DependsOnTargets="HarvestFileInfo">
+		<ItemGroup>
+			<InstallerSourceFiles Condition="'$(InstallerSourceFiles)' == ''"
+					              Include="$(InstallerSourceFolder)\**\*.wxs;$(FilesFragmentWxs)"/>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="HarvestFileInfo"
+			DependsOnTargets="DefineBuildInstallerProperties"
+			Inputs="@(ProductFiles)"
+		    Outputs="$(FilesFragmentWxs)">
+		<PropertyGroup>
+			<MainExeFileId>MainExeFileId</MainExeFileId>
+		</PropertyGroup>
+		<Exec Command='"$(WixToolsPath)\heat.exe" dir "$(ProductFolder)\" -ag -srd -sreg -nologo -cg FilesComponentGroup -dr INSTALLFOLDER -out "$(FilesFragmentWxs)" -var var.ProductFolder' />
+		<Exec Command="$(PowerShellStart) ReplaceExeId '$(AssemblyName)' '$(FilesFragmentWxs)' '$(MainExeFileId)' $(PowerShellEnd)" />
+	</Target>
+
+	<Target Name="DefineBuildInstallerProperties"
+			DependsOnTargets="DefineInstallerPath;
+			                  DefineInstallerOutputPaths">
+		<PropertyGroup>
+			<WixToolsPath>$(PkgWiX)\tools</WixToolsPath>
+			<!-- Override for old (non SDK-style) .csproj files -->
+			<WixToolsPath Condition="'$(PkgWiX)' == ''">$(WixInstallPath)</WixToolsPath>
+			<ScriptLocation>$(MSBuildThisFileDirectory)BuildInstallerUtils.ps1</ScriptLocation>
+			<PowerShellStart>powershell -NonInteractive -ExecutionPolicy RemoteSigned -NoLogo -NonInteractive -NoProfile -command "&amp;{ . '$(ScriptLocation)';</PowerShellStart>
+			<PowerShellEnd>}"</PowerShellEnd>
+			<InstallerSourceFolder Condition="'$(InstallerSourceFolder)' == ''">Installer</InstallerSourceFolder>
+			<ProductWxs>$(InstallerSourceFolder)\Product.wxs</ProductWxs>
+			<ProductWixObj>$(InstallerIntermediateOutputPath)\Product.wixobj</ProductWixObj>
+			<FilesFragmentWxs>$(InstallerIntermediateOutputPath)\productFiles.wxs</FilesFragmentWxs>
+		</PropertyGroup>
+		<CallTarget Targets="DefineIsOldStyleProject;
+					         DefineProductFolder;
+							 DefineProductFiles;
+							 DefineProduct"/>
+	</Target>
+
+	<Target Name="DefineProductFiles" DependsOnTargets="DefineProductFolder">
+		<ItemGroup>
+			<ProductFiles Condition="'$(ProductFiles)' == ''"
+						  Include="$(ProductFolder)\**\*.*"/>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="DefineInstallerPath"
+			DependsOnTargets="DefineProduct;
+			                  DefineIsOldStyleProject;
+							  DefineInstallerOutputPaths">
+		<PropertyGroup>
+			<InstallerName Condition="'$(InstallerName)' == '' And '$(IsOldStyleProject)' == 'true'">$(Product)_$(Version).msi</InstallerName>
+			<InstallerName Condition="'$(InstallerName)' == ''">$(Product)_$(Version)_$(TargetFramework).msi</InstallerName>
+			<InstallerPath>$(InstallerOutputPath)\$(InstallerName)</InstallerPath>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="DefineProduct" DependsOnTargets="DefineIsOldStyleProject">
+		<GetAssemblyInfo Path="$(TargetPath)" Condition="'$(IsOldStyleProject)' == 'true'">
+			<Output PropertyName="Product" TaskParameter="ProductName" />
+		</GetAssemblyInfo>
+	</Target>
+
+	<Target Name="DefineIsOldStyleProject">
+		<PropertyGroup>
+			<IsOldStyleProject Condition="'$(UsingMicrosoftNETSdk)' != 'true'">true</IsOldStyleProject>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="DefineInstallerOutputPaths" DependsOnTargets="DefineProductFolder">
+		<SplitPath Path="$(IntermediateOutputPath)">
+			<Output PropertyName="IntermediateOutputFolderName" TaskParameter="Leaf" />
+			<Output PropertyName="IntermediateOutputPathParent" TaskParameter="BasePath" />
+		</SplitPath>
+		<SplitPath Path="$(ProductFolder)">
+			<Output PropertyName="ProductFolderName" TaskParameter="Leaf" />
+			<Output PropertyName="ProductFolderParent" TaskParameter="BasePath" />
+		</SplitPath>
+		<PropertyGroup>
+			<InstallerIntermediateOutputPath>$(IntermediateOutputPathParent)\$(IntermediateOutputFolderName)-installer</InstallerIntermediateOutputPath>
+			<InstallerOutputPath Condition="'$(InstallerOutputPath)' == ''">$(ProductFolderParent)\$(ProductFolderName)-installer</InstallerOutputPath>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="DefineProductFolder" DependsOnTargets="DefineIsFileSystemPublish">
+		<PropertyGroup>
+			<ProductFolder Condition="'$(ProductFolder)' == '' And '$(IsFileSystemPublish)' == 'true'">$(PublishDir)</ProductFolder>
+			<ProductFolder Condition="'$(ProductFolder)' == ''">$(OutputPath)</ProductFolder>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="DefineIsFileSystemPublish">
+		<PropertyGroup>
+			<IsFileSystemPublish Condition="'$(PublishProtocol)' == 'FileSystem'">true</IsFileSystemPublish>
+		</PropertyGroup>
+	</Target>
+
+</Project>

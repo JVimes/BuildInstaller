@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>$id$</id>
+		<version>$version$</version>
+		<authors>$authors$</authors>
+		<developmentDependency>$developmentDependency$</developmentDependency>
+		<requireLicenseAcceptance>$requireLicenseAcceptance$</requireLicenseAcceptance>
+		<tags>$tags$</tags>
+		<copyright>$Copyright$</copyright>
+		<license type="expression">$licenseExpression$</license>
+		<projectUrl>$projectUrl$</projectUrl>
+		<description>$description$</description>
+		<releaseNotes>$releaseNotes$</releaseNotes>
+		<icon>icon.png</icon>
+		<readme>ReadMe.md</readme>
+
+		<dependencies>
+			<dependency id="WiX" version="3.11.2" />
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="PackageFiles\*.*" target="build\" />
+		<file src="..\Icons\PackageIcon.png" target="\icon.png" />
+		<file src="..\ReadMe.md" target="\" />
+	</files>
+</package>

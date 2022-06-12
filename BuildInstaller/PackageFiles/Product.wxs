@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<?define MainExeFileId = "MainExeFileId" ?>
+	<?define ProductVersion = "!(bind.FileVersion.$(var.MainExeFileId))"?>
+	<?define UpgradeCode = "UPGRADE-CODE-PLACEHOLDER"?>
+
+	<Product Id="*"
+			 Name="$(var.ProductName)"
+			 Language="1033"
+			 Version="$(var.ProductVersion)"
+			 Manufacturer="$(var.Manufacturer)"
+			 UpgradeCode="$(var.UpgradeCode)">
+
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Feature Id="ProductFeature" Title="[ProductName]" Level="1">
+			<!-- FilesComponentGroup is generated during build -->
+			<ComponentGroupRef Id="FilesComponentGroup" />
+			<ComponentRef Id="ApplicationShortcut" />
+		</Feature>
+
+		<SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
+		<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+
+		<!--
+		  For an icon in Start menu and Apps & Features:
+		    - Uncomment the code just below here
+		    - Create an icon at the path shown there
+		    - Add Icon="Icon" to Shortcut element, below, or set ApplicationIcon
+		      in your .csproj
+		-->
+		<!--<Icon Id="Icon" SourceFile="$(var.ProjectDir)\icon.ico"/>
+		<Property Id="ARPPRODUCTICON" Value="Icon" />-->
+
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="$(var.ProductName)"/>
+			</Directory>
+			<Directory Id="ProgramMenuFolder"/>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<DirectoryRef Id="ProgramMenuFolder">
+			<Component Id="ApplicationShortcut" Guid="*">
+				<Shortcut Id="ApplicationStartMenuShortcut"
+						  Name="$(var.ProductName)"
+						  Target="[!$(var.MainExeFileId)]"
+						  WorkingDirectory="INSTALLFOLDER"/>
+				<RemoveFolder Id="CleanUpShortCut"
+							  Directory="ProgramMenuFolder"
+							  On="uninstall"/>
+				<RegistryValue Root="HKCU"
+							   Key="Software\$(var.ProductName)"
+							   Name="installed"
+							   Type="integer"
+							   Value="1"
+			                   KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+	</Fragment>
+
+</Wix>

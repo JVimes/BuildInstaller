@@ -1,20 +1,64 @@
 ﻿<Project Sdk="Microsoft.Build.NoTargets/3.5.6">
 
-	<PropertyGroup>
-		<!-- TargetFramework not actually used -->
-		<TargetFramework>net6.0</TargetFramework>
-	</PropertyGroup>
-
-	<PropertyGroup>
+	<PropertyGroup Label="PackageProperties">
 		<PackageId>BuildInstaller</PackageId>
 		<Version>0.0.0-beta</Version>
-		<PackageTags>Install;Installer;Windows Installer;MSI;WiX</PackageTags>
-		<Description></Description>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>John Burak</Authors>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageTags>Windows;Installer;Install;Setup;MSI;WiX</PackageTags>
+		<Copyright>Copyright © John Burak 2022.</Copyright>
+		<PackageLicenseExpression>MIT-0</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/JVimes/BuildInstaller</PackageProjectUrl>
+		<Description>Causes a project to produce an installer during Release builds (configurable).</Description>
+		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.2.0"/>
-	</ItemGroup>
+	<PropertyGroup Label="PackageBuild">
+		<NoBuild>true</NoBuild>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<PackageOutputPath>bin\</PackageOutputPath>
+		<NuspecFile>BuildInstaller.nuspec</NuspecFile>
+		<NuspecProperties>
+			id=$(PackageId);
+			version=$(Version);
+			authors=$(Authors);
+			developmentDependency=$(DevelopmentDependency);
+			requireLicenseAcceptance=$(PackageRequireLicenseAcceptance);
+			tags=$(PackageTags.Replace(";"," "));
+			description=$(Description);
+			releaseNotes=$(PackageReleaseNotes);
+			licenseExpression=$(PackageLicenseExpression);
+			copyright=$(Copyright);
+			projectUrl=$(PackageProjectUrl)
+		</NuspecProperties>
+		<!-- Not actually used. https://github.com/microsoft/MSBuildSdks/issues/368 -->
+		<TargetFramework>net48</TargetFramework>
+		<!-- ".ps1 won't execute during install" (not supposed to)-->
+		<NoWarn>NU5110;NU5111</NoWarn>
+	</PropertyGroup>
+
+	<Target Name="ClearLocalNuGetCache" BeforeTargets="Pack">
+		<PropertyGroup>
+			<PackagesFolder>..\packages\</PackagesFolder>
+		</PropertyGroup>
+		<ItemGroup>
+			<ProjectConfigCaches Include="$([System.IO.Directory]::GetDirectories(&quot;$(PackagesFolder)&quot;,&quot;$(PackageId).*&quot;))" Condition="Exists($(PackagesFolder))" />
+		</ItemGroup>
+		<Message Text="Deleting $(MSBuildProjectName)'s NuGet caches and restoring" Importance="high" />
+		<RemoveDir Directories="$(NugetPackageRoot)$(PackageId.ToLower())" />
+		<RemoveDir Directories="@(ProjectConfigCaches)" />
+	</Target>
+
+	<Target Name="RestoreAll" AfterTargets="Pack">
+		<PropertyGroup>
+			<NuGetExeUrl>https://dist.nuget.org/win-x86-commandline/latest/nuget.exe</NuGetExeUrl>
+		</PropertyGroup>
+		<DownloadFile SourceUrl="$(NuGetExeUrl)" DestinationFolder="$(TEMP)">
+			<Output TaskParameter="DownloadedFile" ItemName="NuGetExe" />
+		</DownloadFile>
+		<Exec Command="@(NuGetExe) restore .." />
+	</Target>
 
 </Project>
