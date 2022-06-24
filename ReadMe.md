@@ -19,11 +19,11 @@ For new installers to upgrade old ones, increment any of the first _three_ digit
 
 Certain Windows Installer properties are set from project properties. For .NET projects, see the Package tab. For the old .csproj format, click the Assembly Information button.
 
-| Project                                | Windows Installer               |
-|----------------------------------------|---------------------------------|
-| Package Version<br>(Assembly Version)  | ProductVersion                  |
-| Product                                | ProductName                     |
-| Company<br>(if empty, Product)         | Manufacturer<br>(aka Publisher) |
+| Project                            | Windows Installer            |
+|------------------------------------|------------------------------|
+| Package Version (Assembly Version) | ProductVersion               |
+| Product                            | ProductName                  |
+| Company (if empty, Product)        | Manufacturer (aka Publisher) |
 
 ## Customization
 
