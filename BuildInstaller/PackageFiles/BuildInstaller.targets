@@ -1,8 +1,7 @@
 ﻿<Project>
 
 	<Target Name="BuildInstallerIfShould"
-			AfterTargets="PostBuildEvent"
-			DependsOnTargets="DefineIsFileSystemPublish">
+			AfterTargets="PostBuildEvent">
 		<PropertyGroup>
 			<InstallerBuildConfigurations Condition="'$(InstallerBuildConfigurations)' == ''">Release</InstallerBuildConfigurations>
 		</PropertyGroup>
@@ -12,15 +11,7 @@
 		<PropertyGroup>
 			<IsInstallerBuildConfiguration Condition="'%(InstallerBuildConfigurationItems.Identity)' == '$(Configuration)'">true</IsInstallerBuildConfiguration>
 			<IsClickOnceBuild Condition="'$(GenerateClickOnceManifests)' == 'true'">true</IsClickOnceBuild>
-			<ShouldBuildInstaller
-				Condition="
-				'$(IsClickOnceBuild)' == '' And
-				'$(IsInstallerBuildConfiguration)' == 'true' And
-				(
-					('$(BuildInstallerOnPublish)' == 'true' And '$(IsFileSystemPublish)' == 'true') Or
-					'$(BuildInstallerOnPublish)' == ''
-				)"
-				>true</ShouldBuildInstaller>
+			<ShouldBuildInstaller Condition="'$(IsClickOnceBuild)' == '' And '$(IsInstallerBuildConfiguration)' == 'true'">true</ShouldBuildInstaller>
 		</PropertyGroup>
 		<Warning Text="ClickOnce build detected, Skipping BuildInstaller" Condition="'$(IsClickOnceBuild)' == 'true'"/>
 		<CallTarget Targets="BuildInstaller" Condition="'$(ShouldBuildInstaller)' == 'true'"/>
@@ -207,16 +198,9 @@
 		</PropertyGroup>
 	</Target>
 
-	<Target Name="DefineProductFolder" DependsOnTargets="DefineIsFileSystemPublish">
+	<Target Name="DefineProductFolder">
 		<PropertyGroup>
-			<ProductFolder Condition="'$(ProductFolder)' == '' And '$(IsFileSystemPublish)' == 'true'">$(PublishDir)</ProductFolder>
 			<ProductFolder Condition="'$(ProductFolder)' == ''">$(OutputPath)</ProductFolder>
-		</PropertyGroup>
-	</Target>
-
-	<Target Name="DefineIsFileSystemPublish">
-		<PropertyGroup>
-			<IsFileSystemPublish Condition="'$(PublishProtocol)' == 'FileSystem'">true</IsFileSystemPublish>
 		</PropertyGroup>
 	</Target>
 
