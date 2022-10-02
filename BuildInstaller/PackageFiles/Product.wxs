@@ -5,6 +5,16 @@
 	<?define ProductVersion = "!(bind.FileVersion.$(var.MainExeFileId))"?>
 	<?define UpgradeCode = "UPGRADE-CODE-PLACEHOLDER"?>
 
+	<?if $(sys.BUILDARCH)="x86"?>
+	<?define Minimum_Version="100"?>
+	<?define Program_Files="ProgramFilesFolder"?>
+	<?elseif $(sys.BUILDARCH)="x64" Or $(sys.BUILDARCH)="ia64"?>
+	<?define Minimum_Version="200"?>
+	<?define Program_Files="ProgramFiles64Folder"?>
+	<?else?>
+	<?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
+	<?endif?>
+
 	<Product Id="*"
 			 Name="$(var.ProductName)"
 			 Language="1033"
@@ -12,7 +22,7 @@
 			 Manufacturer="$(var.Manufacturer)"
 			 UpgradeCode="$(var.UpgradeCode)">
 
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="$(var.Minimum_Version)" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes" />
@@ -24,7 +34,10 @@
 		</Feature>
 
 		<SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
-		<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+
+		<WixVariable Id="WixUILicenseRtf" Value="Installer/License.rtf" />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+		<UIRef Id="SimpleUI"/>
 
 		<!--
 		  For an icon in Start menu and Apps & Features:
@@ -40,7 +53,7 @@
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
+			<Directory Id="$(var.Program_Files)">
 				<Directory Id="INSTALLFOLDER" Name="$(var.ProductName)"/>
 			</Directory>
 			<Directory Id="ProgramMenuFolder"/>

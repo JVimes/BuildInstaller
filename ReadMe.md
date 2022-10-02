@@ -2,7 +2,7 @@
 
 BuildInstaller is a NuGet package that causes a Visual Studio project to produce an installer during Release builds (configurable).
 
-The project's output files will be installed under "Program Files (x86)" and a shortcut placed at the root of Start menu. The application can be uninstalled via Apps & Features.
+The project's output files will be installed under Program Files and a shortcut placed at the root of Start menu. The application can be uninstalled via Apps & Features.
 
 # Use
 
@@ -13,7 +13,11 @@ Install the BuildInstaller package in your application's project. On Release bui
 
 ## Version Numbers and Upgrades
 
-For new installers to upgrade old ones, increment any of the first _three_ digit-groups in your .exe's assembly version, e.g. `1.0.21.0` to `1.0.22.0`. Windows Installer does not check the fourth digit-group and will otherwise install duplicate entries in Apps & Features. You can delete the fourth group.
+For new installers to upgrade old ones, increment any of the first _three_ digit-groups in your .exe's assembly version, e.g. `1.0.21.0` to `1.0.22.0`. Windows Installer does not check the fourth digit-group and will otherwise install duplicate entries in Apps & Features. You can delete the fourth digit group.
+
+## License Agreement File
+
+The install-time license agreement text is set from [Project]\Installer\License.rtf, which is created on first installer build. Edit it with WordPad.
 
 ## Defaults
 
@@ -31,7 +35,7 @@ Some things can be customized via the .csproj or Product.wxs files.
 
 ### Icon
 
-To have a program icon, see the comment in [ProjectFolder]\Installer\Product.wxs, which appears on first installer build.
+To have a program icon, see the comment in [Project]\Installer\Product.wxs, which is created on first installer build.
 
 An easy way to create an icon file is to convert a 256x256 .png image using [Quick Any2Ico][Any2Ico], which has a free edition.
 
@@ -55,6 +59,10 @@ These properties are:
 - **InstallerBuildConfigurations** - Semicolon separated list of build configurations, for each of which an installer will build.
     - Default: `Release`
     - Example: `Debug;Release`
+
+- **InstallerArchitecture** - Selects between "Program Files" and "Program Files (x86)" install folders, and certain registry paths if set via WiX. Set to either x86, x64, or ia64.
+  - Default: `x64`
+  - Example: `x86`
 
 - **InstallerOutputPath** - Path where the installer will be built to.
     - Default: `$(ProductFolderParent)\$(ProductFolderName)-installer`
@@ -88,20 +96,17 @@ These items are:
 
 ### Installer Source Code
 
-The installer is built using [The WiX Toolset][WiXUrl]. The installer can be customized by editing [ProjectFolder]\Installer\Product.wxs (which appears on first installer build) or by adding other WiX source code files to the same folder.
+The installer is built using [The WiX Toolset][WiXUrl]. The installer can be customized by editing [Project]\Installer\Product.wxs (which is created on first installer build) or by adding other WiX source code files to the same folder.
 
 # Developing BuildInstaller
 
-The **BuildInstaller project** builds the NuGet package and deletes local caches of it. 
+There are sometimes errors the first time this solution is built and they go away on subsequent build. Maybe NuGet restore runs too late the first time.
 
-Its PackageFiles subfolder holds MSBuild files that will be included in builds of projects that use BuildInstaller. The primary file is BuildInstaller.targets, which has entry points `BuildInstallerIfShould` and `CleanInstallerFolders`.
+The **BuildInstaller project** builds the NuGet package and deletes local caches of it.
+  - Its PackageFiles folder holds MSBuild files that run in projects that use BuildInstaller.
+  - The primary file is BuildInstaller.targets, which has entry points `BuildInstallerIfShould` and `CleanInstallerFolders`.
 
-The **"TestApp" projects** install the BuildInstaller NuGet package. They do so directly from where it was built due to the local NuGet.config file. Switch which line in that file is commented when switching between Debug and Release modes:
-
-```xml
-<add key="BuildInstallerDebugFolder" value="BuildInstaller\bin\Debug\" />
-<!--<add key="BuildInstallerReleaseFolder" value="BuildInstaller\bin\Release\" />-->
-```
+The **"test app" projects** consume the BuildInstaller NuGet package. They do so directly from where it was built (due to the local NuGet.config).
 
 ## Testing
 
@@ -112,6 +117,8 @@ Make sure:
 - The build actions work correctly: Build, Rebuild, Clean.
 - The installer is only built for build configurations listed in the InstallerBuildConfigurations property.
 - Building the app a second time in a row causes "up-to-date" to show in Output. Before testing this, unload the BuildInstaller project because it artificially forces the second build.
+- InstallerArchitecture correctly affects install location: "Program Files" vs "Program Files (x86)".
+- Try the 'To remove the "done" dialog' instructions in SimpleUI.wxs.
 
 Edit the application's "Product" and "Company" properties (see "Package" or "Assembly Information" project settings, depending on project format), do a Build, and make sure:
 

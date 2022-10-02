@@ -2,7 +2,7 @@
 
 	<PropertyGroup Label="PackageProperties">
 		<PackageId>BuildInstaller</PackageId>
-		<Version>1.0.0-beta</Version>
+		<Version>1.0.0</Version>
 		<Authors>John Burak</Authors>
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -11,7 +11,7 @@
 		<PackageLicenseExpression>MIT-0</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/JVimes/BuildInstaller</PackageProjectUrl>
 		<Description>Causes a project to produce an installer during Release builds (configurable).</Description>
-		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+		<PackageReleaseNotes>Implement installer UI.</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<PropertyGroup Label="PackageBuild">
@@ -35,7 +35,7 @@
 		</NuspecProperties>
 		<!-- Not actually used. https://github.com/microsoft/MSBuildSdks/issues/368 -->
 		<TargetFramework>net48</TargetFramework>
-		<!-- ".ps1 won't execute during install" (not supposed to)-->
+		<!-- ".ps1 won't execute during install" (not supposed to) -->
 		<NoWarn>NU5110;NU5111</NoWarn>
 	</PropertyGroup>
 
@@ -49,6 +49,10 @@
 		<Message Text="Deleting $(MSBuildProjectName)'s NuGet caches and restoring" Importance="high" />
 		<RemoveDir Directories="$(NugetPackageRoot)$(PackageId.ToLower())" />
 		<RemoveDir Directories="@(ProjectConfigCaches)" />
+
+		<!-- Useful while developing the WiX files: -->
+		<!--<RemoveDir Directories="..\TestApp\Installer" />
+		<RemoveDir Directories="..\TestAppOldProjFormat\Installer" />-->
 	</Target>
 
 	<Target Name="RestoreAll" AfterTargets="Pack">

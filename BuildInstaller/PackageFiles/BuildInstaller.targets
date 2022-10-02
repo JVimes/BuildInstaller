@@ -38,7 +38,10 @@
 							  DefineBuildInstallerProperties"
 			Inputs="@(InstallerObjFiles)"
 			Outputs="$(InstallerPath)">
-		<Exec Command='"$(WixToolsPath)\light.exe" -nologo -ext WixUIExtension -out "$(InstallerPath)" @(InstallerObjFiles->&apos;"%(Identity)"&apos;, &apos; &apos;) -ext WixNetFxExtension' />
+		<ItemGroup>
+			<WixLocalizationFiles Include="$(InstallerSourceFolder)\*.wxl"/>
+		</ItemGroup>
+		<Exec Command='"$(WixToolsPath)\light.exe" -nologo -ext WixUtilExtension -ext WixNetFxExtension -ext WixUIExtension @(WixLocalizationFiles->&apos;-loc "%(Identity)"&apos;, &apos; &apos;) -out "$(InstallerPath)" @(InstallerObjFiles->&apos;"%(Identity)"&apos;, &apos; &apos;)' />
 	</Target>
 
 	<Target Name="GetInstallerObjFiles" DependsOnTargets="CompileInstaller">
@@ -48,18 +51,18 @@
 	</Target>
 
 	<Target Name="CompileInstaller"
-			DependsOnTargets="WriteProductWxsIfNotExists;
+			DependsOnTargets="CopyInitialWixSourceFiles;
 			                  GetInstallerSourceFiles;
 				              DefineBuildInstallerProperties"
 			Inputs="@(InstallerSourceFiles);$(TargetPath)"
-			Outputs="@(InstallerSourceFiles->'$(InstallerIntermediateOutputPath)\%(filename).wixobj');$(InstallerOutputPath)\Product.wixobj">
+			Outputs="@(InstallerSourceFiles->'$(InstallerIntermediateOutputPath)\%(filename).wixobj');$(InstallerIntermediateOutputPath)\Product.wixobj">
 		<GetAssemblyInfo Path="$(TargetPath)" Condition="'$(IsOldStyleProject)' == 'true'">
 			<Output PropertyName="Company" TaskParameter="CompanyName" />
 		</GetAssemblyInfo>
 		<PropertyGroup>
 			<Company Condition="'$(Company)' == ''">$(Product)</Company>
 		</PropertyGroup>
-		<Exec Command='"$(WixToolsPath)\candle.exe" -nologo -out "$(InstallerIntermediateOutputPath)\\" @(InstallerSourceFiles->&apos;&quot;%(Identity)&quot;&apos;, &apos; &apos;) -dProductFolder="$(ProductFolder)\" -dProjectDir="$(ProjectDir)\" -dManufacturer="$(Company)" -dProductName="$(Product)" -ext WixUtilExtension'
+		<Exec Command='"$(WixToolsPath)\candle.exe" -nologo -arch $(InstallerArchitecture) -out "$(InstallerIntermediateOutputPath)\\" @(InstallerSourceFiles->&apos;&quot;%(Identity)&quot;&apos;, &apos; &apos;) -dProductFolder="$(ProductFolder)\" -dProjectDir="$(ProjectDir)\" -dManufacturer="$(Company)" -dProductName="$(Product)" -ext WixUtilExtension'
 			  StandardOutputImportance='normal'/>
 	</Target>
 
@@ -103,14 +106,15 @@
 		</Task>
 	</UsingTask>
 
-	<Target Name="WriteProductWxsIfNotExists"
+	<Target Name="CopyInitialWixSourceFiles"
 			DependsOnTargets="DefineBuildInstallerProperties"
-			Condition="!Exists($(ProductWxs))"
-			Outputs="$(ProductWxs)">
-		<PropertyGroup>
-			<ProductWxsTemplate>$(MSBuildThisFileDirectory)Product.wxs</ProductWxsTemplate>
-		</PropertyGroup>
-		<Copy SourceFiles="$(ProductWxsTemplate)" DestinationFiles="$(ProductWxs)" />
+			Condition="!Exists($(ProductWxs))">
+		<ItemGroup>
+			<TemplateWixFiles Include="$(MSBuildThisFileDirectory)*.wxs"/>
+			<TemplateWixFiles Include="$(MSBuildThisFileDirectory)*.wxl"/>
+			<TemplateWixFiles Include="$(MSBuildThisFileDirectory)*.rtf"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(TemplateWixFiles)" DestinationFolder="$(InstallerSourceFolder)" />
 		<Exec Command="$(PowerShellStart) FillInProductWxs '.\$(ProductWxs)' $(PowerShellEnd)" />
 	</Target>
 
@@ -142,6 +146,7 @@
 			<ScriptLocation>$(MSBuildThisFileDirectory)BuildInstallerUtils.ps1</ScriptLocation>
 			<PowerShellStart>powershell -NonInteractive -ExecutionPolicy RemoteSigned -NoLogo -NonInteractive -NoProfile -command "&amp;{ . '$(ScriptLocation)';</PowerShellStart>
 			<PowerShellEnd>}"</PowerShellEnd>
+			<InstallerArchitecture Condition="'$(InstallerArchitecture)' == ''">x64</InstallerArchitecture>
 			<InstallerSourceFolder Condition="'$(InstallerSourceFolder)' == ''">Installer</InstallerSourceFolder>
 			<ProductWxs>$(InstallerSourceFolder)\Product.wxs</ProductWxs>
 			<ProductWixObj>$(InstallerIntermediateOutputPath)\Product.wixobj</ProductWixObj>
