@@ -13,9 +13,9 @@ Install the BuildInstaller package in your application's project. On Release bui
 
 ## Version Numbers and Upgrades
 
-For new installers to upgrade old ones, increment any of the first _three_ digit-groups in your .exe's assembly version, e.g. `1.0.21.0` to `1.0.22.0`. Windows Installer does not check the fourth digit-group and will otherwise install duplicate entries in Apps & Features. You can delete the fourth digit group.
+For new installers to upgrade old ones, increment any of the first _three_ digit-groups in your application's version, e.g. `1.0.21.0` to `1.0.22.0`. Windows Installer does not check the fourth digit-group and will otherwise install duplicate entries in Apps & Features. You can delete the fourth digit group if you like.
 
-The version number is read from the applications package version aka the .csproj `version` property. For the old .csproj format, you have to add a `<version>` property to the .csproj.
+The version number is read from the application's package version aka the .csproj `version` property. For the old .csproj format, you have to add a `<version>` property to the .csproj.
 
 ## License Agreement File
 
