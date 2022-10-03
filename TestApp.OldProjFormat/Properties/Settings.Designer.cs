@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TestAppOldProjFormat.Properties
+namespace TestApp.OldProjFormat.Properties
 {
 
 

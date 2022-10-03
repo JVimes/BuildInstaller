@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.
 		{BF815808-50BB-49D4-8A2A-39D492546D1D} = {BF815808-50BB-49D4-8A2A-39D492546D1D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppOldProjFormat", "TestAppOldProjFormat\TestAppOldProjFormat.csproj", "{F57AC3F8-1DC4-4603-9AE6-8959B562CCF9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp.OldProjFormat", "TestApp.OldProjFormat\TestApp.OldProjFormat.csproj", "{F57AC3F8-1DC4-4603-9AE6-8959B562CCF9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BF815808-50BB-49D4-8A2A-39D492546D1D} = {BF815808-50BB-49D4-8A2A-39D492546D1D}
 	EndProjectSection

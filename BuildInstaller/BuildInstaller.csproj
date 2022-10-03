@@ -52,7 +52,7 @@
 
 		<!-- Useful while developing the WiX files: -->
 		<!--<RemoveDir Directories="..\TestApp\Installer" />
-		<RemoveDir Directories="..\TestAppOldProjFormat\Installer" />-->
+		<RemoveDir Directories="..\TestApp.OldProjFormat\Installer" />-->
 	</Target>
 
 	<Target Name="RestoreAll" AfterTargets="Pack">
