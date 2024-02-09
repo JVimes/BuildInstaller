@@ -111,7 +111,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
-    <Error Condition="!Exists('..\packages\BuildInstaller.1.0.0-beta\build\BuildInstaller.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildInstaller.1.0.0-beta\build\BuildInstaller.targets'))" />
+    <Error Condition="!Exists('..\packages\BuildInstaller.1.0.1\build\BuildInstaller.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildInstaller.1.0.1\build\BuildInstaller.targets'))" />
   </Target>
-  <Import Project="..\packages\BuildInstaller.1.0.0-beta\build\BuildInstaller.targets" Condition="Exists('..\packages\BuildInstaller.1.0.0-beta\build\BuildInstaller.targets')" />
+  <Import Project="..\packages\BuildInstaller.1.0.1\build\BuildInstaller.targets" Condition="Exists('..\packages\BuildInstaller.1.0.1\build\BuildInstaller.targets')" />
 </Project>
