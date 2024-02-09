@@ -1,10 +1,10 @@
-﻿# BuildInstaller
+﻿## BuildInstaller
 
 BuildInstaller is a NuGet package that causes a Visual Studio project to produce an installer during Release builds (configurable). It has been tested with .NET projects and might need changes to support other types. The installer is a .msi file (Windows Installer package).
 
 The project's output files will be installed under Program Files and an application shortcut placed at the root of Start menu. Running the installer again gives access to the Remove and Repair buttons. The application can also be uninstalled via Apps & Features.
 
-# Use
+# Using It
 
 Install the BuildInstaller package in your application's project. On Release builds the installer will appear in:
 
@@ -100,9 +100,15 @@ These items are:
 
 The installer is built using [The WiX Toolset][WiXUrl]. The installer can be customized by editing Product.wxs and SimpleUI.wxs which are created in [Project]\Installer\ on first installer build, or by adding other WiX source code files to that folder.
 
+---
+
 # Developing BuildInstaller
 
-There are sometimes errors the first time the solution or TestApp.OldProjFormat are built. The errors seem to go away if build is run a second time (something to do with NuGet restore?).
+In Visual Studio, the first solution build will fail on the TestApp.OldProjFormat project:
+
+> The command ""\heat.exe" dir "bin\Debug\\" ... exited with code 9009.
+
+After this error, right click its project in Solution Explorer and select **Rebuild**. It should build and the solution should build after that.
 
 The **BuildInstaller project** builds the NuGet package and deletes local caches of it.
   - Its PackageFiles folder holds MSBuild files that run in projects that use BuildInstaller.

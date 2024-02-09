@@ -16,7 +16,7 @@
 		<readme>ReadMe.md</readme>
 
 		<dependencies>
-			<dependency id="WiX" version="3.11.2" />
+			<dependency id="WiX" version="3.14.0" />
 		</dependencies>
 	</metadata>
 	<files>
